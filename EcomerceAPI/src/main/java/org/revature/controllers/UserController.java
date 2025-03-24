@@ -25,6 +25,15 @@ public class UserController {
             logger.warn("RegisterUser-Mail not available");
             return;
         }
+        boolean validRol=false;
+        if(requestUser.getRole().equals("ADMIN")||requestUser.getRole().equals("CUSTOMER"))
+            validRol=true;
+        if(!validRol){
+            context.status(400);
+            context.json(new ErrorMessage("Invalid Role"));
+            logger.warn("RegisterUser-Invalid Role");
+            return;
+        }
         User registeredUser = userService.registerUser(requestUser);
 
         if (registeredUser == null){
@@ -50,7 +59,7 @@ public class UserController {
         if (returnedUser == null){
             context.json(new ErrorMessage("Username or Password Incorrect"));
             context.status(400);
-            logger.warn("user ligon error " + requestUser.getUserId());
+            logger.warn("user login error " + requestUser.getUserId());
             return;
         }
         // If valid return the user and add them to the session

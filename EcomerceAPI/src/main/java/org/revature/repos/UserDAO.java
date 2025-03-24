@@ -2,6 +2,7 @@ package org.revature.repos;
 
 import org.revature.models.User;
 import org.revature.util.ConnectionUtil;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -67,10 +68,13 @@ public class UserDAO {
        try (Connection conn = ConnectionUtil.getConnection()
             ) {
            PreparedStatement pstmt = conn.prepareStatement(sql);
+           BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+           String hashedPassword = passwordEncoder.encode(user.getPassword());
+
            pstmt.setString(1, user.getFirstName());
            pstmt.setString(2, user.getLastName());
            pstmt.setString(3, user.getEmail());
-           pstmt.setString(4, user.getPassword());
+           pstmt.setString(4, hashedPassword);
            pstmt.setString(5, user.getRole());
 
            int rowsAffected = pstmt.executeUpdate();
@@ -86,10 +90,14 @@ public class UserDAO {
         try (Connection conn = ConnectionUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            String hashedPassword = passwordEncoder.encode(user.getPassword());
+
+
             pstmt.setString(1, user.getFirstName());
             pstmt.setString(2, user.getLastName());
             pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, user.getPassword());
+            pstmt.setString(4, hashedPassword);
 
             pstmt.setInt(5, user.getUserId());
 

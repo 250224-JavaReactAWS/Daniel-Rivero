@@ -12,7 +12,8 @@ public class CartItemDAO {
     //metods to interact with the database
     //update, delete, add, get
     public boolean addCartItem(CartItem cartItem) {
-        String sql = "INSERT INTO cart_item (user_id, product_id, quantity) VALUES (?, ?, ?)";
+
+        String sql = "INSERT INTO cartitem (user_id, product_id, quantity) VALUES (?, ?, ?)";
         try (Connection conn = ConnectionUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)
                 ){
@@ -27,7 +28,7 @@ public class CartItemDAO {
         return true;
     }
     public boolean updateCartItem( CartItem cartItem) {
-        String sql = "UPDATE cart_item SET quantity = ? WHERE user_id = ? AND product_id = ?";
+        String sql = "UPDATE cartitem SET quantity = ? WHERE user_id = ? AND product_id = ?";
         try (Connection conn = ConnectionUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)
         ){
@@ -42,7 +43,7 @@ public class CartItemDAO {
         return true;
     }
     public boolean deleteCartItem(int userId, int productId) {
-        String sql = "DELETE FROM cart_item WHERE user_id = ? AND product_id = ?";
+        String sql = "DELETE FROM cartitem WHERE user_id = ? AND product_id = ?";
         try (Connection conn = ConnectionUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)
         ){
@@ -55,22 +56,10 @@ public class CartItemDAO {
         }
         return true;
     }
-    public boolean deleteCart(int userId) {
-        String sql = "DELETE FROM cart_item WHERE user_id = ?";
-        try (Connection conn = ConnectionUtil.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)
-        ){
-            pstmt.setInt(1, userId);
-            pstmt.executeUpdate();
-        }catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
+
     public ArrayList<CartItem> getCart(int userId) {
         ArrayList<CartItem> cart = new ArrayList<>();
-        String sql = "SELECT * FROM cart_item WHERE user_id = ?";
+        String sql = "SELECT * FROM cartitem WHERE user_id = ?";
         try (Connection conn = ConnectionUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)
         ){
@@ -78,6 +67,7 @@ public class CartItemDAO {
             var rs = pstmt.executeQuery();
             while (rs.next()) {
                 CartItem cartItem = new CartItem();
+                cartItem.setCartItemId(rs.getInt("cart_item_id"));
                 cartItem.setUserId(rs.getInt("user_id"));
                 cartItem.setProductId(rs.getInt("product_id"));
                 cartItem.setQuantity(rs.getInt("quantity"));

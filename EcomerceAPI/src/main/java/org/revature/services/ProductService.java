@@ -29,4 +29,5 @@ public class ProductService {
     public void updateProduct(Product product) {
         productDAO.updateProduct(product);
     }
+
 }

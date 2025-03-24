@@ -2,12 +2,16 @@ package org.revature.repos;
 
 import org.revature.models.Product;
 import org.revature.util.ConnectionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 
 
 public class ProductDAO {
+    private static final Logger logger = LoggerFactory.getLogger(ProductDAO.class);
+
     public ArrayList<Product> getAllProducts(){
 
         ArrayList<Product> products = new ArrayList<>();
@@ -22,6 +26,7 @@ public class ProductDAO {
                 product.setName(rs.getString("name"));
                 product.setPrice(rs.getDouble("price"));
                 product.setDescription(rs.getString("description"));
+                product.setStock(rs.getInt("stock"));
                 products.add(product);
             }
 
@@ -34,7 +39,7 @@ public class ProductDAO {
 
     public ArrayList<Product> getActiveProducts() {
         ArrayList<Product> products = new ArrayList<>();
-        String sql = "SELECT product_id, product_name, product_price FROM product where stock > 0";
+        String sql = "SELECT product_id, name, price, stock FROM product where stock > 0";
 
         try (Connection conn = ConnectionUtil.getConnection();
              Statement stmt = conn.createStatement();
@@ -44,6 +49,7 @@ public class ProductDAO {
                 product.setProductId(rs.getInt("product_id"));
                 product.setName(rs.getString("name"));
                 product.setPrice(rs.getDouble("price"));
+                product.setStock(rs.getInt("stock"));
                 //product.setDescription(rs.getString("product_description"));
                 products.add(product);
             }
@@ -77,7 +83,9 @@ public class ProductDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             }
-
+        if(product == null){
+            logger.warn("Product not found or out of stock");
+        }
         return product;
 
     }

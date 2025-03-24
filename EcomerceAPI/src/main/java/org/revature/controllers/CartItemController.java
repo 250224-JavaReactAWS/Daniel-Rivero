@@ -4,12 +4,16 @@ import io.javalin.http.Context;
 import org.revature.dtos.response.ErrorMessage;
 import org.revature.models.CartItem;
 import org.revature.services.CartItemService;
+import org.revature.services.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 public class CartItemController {
     private final Logger logger= LoggerFactory.getLogger(UserController.class);
     private final CartItemService cartItemService;
+
     public CartItemController(CartItemService cartItemService) {
         this.cartItemService = cartItemService;
     }
@@ -23,6 +27,8 @@ public class CartItemController {
         }
         // Get the cart item from the body
         CartItem requestCartItem = context.bodyAsClass(CartItem.class);
+        requestCartItem.setUserId((int) context.sessionAttribute("userId"));
+
         boolean addedCartItem = cartItemService.addCartItem(requestCartItem);
         if(addedCartItem){
             context.status(201);
@@ -69,12 +75,23 @@ public class CartItemController {
         }
         // Get the cart item from the body
         CartItem requestCartItem = context.bodyAsClass(CartItem.class);
-        if(requestCartItem.getUserId() != (int) context.sessionAttribute("userId")){
-            context.status(403); // FORBIDDEN -> Authenticated but not authorized
-            context.json(new ErrorMessage("You are not authorized to update this cart item!"));
-            return;
+        requestCartItem.setUserId((int) context.sessionAttribute("userId"));
+        ArrayList<CartItem> cart=cartItemService.getCart((int) context.sessionAttribute("userId"));
+        boolean cartItemExists=false;
+        logger.info("Checking if cart item exists in cart " + requestCartItem.getProductId());
+        for (CartItem cartItem:cart){
+            if (cartItem.getProductId()==requestCartItem.getProductId()){
+                cartItemExists=true;
+                logger.info("Car item found in car" + requestCartItem.getCartItemId());
+                break;
+            }
         }
-        boolean updatedCartItem = cartItemService.updateCartItem(requestCartItem);
+
+        boolean updatedCartItem = false;
+        if (cartItemExists){
+            updatedCartItem = cartItemService.updateCartItem(requestCartItem);
+        }
+
         if(updatedCartItem){
             context.status(200);
             context.json(requestCartItem);
@@ -84,6 +101,25 @@ public class CartItemController {
             context.status(500);
             context.json(new ErrorMessage("Something went wrong!"));
             logger.warn("Cart item not updated " + requestCartItem.getCartItemId());
+            return;
+        }
+    }
+
+    public void getCartItemsHandler(Context context) {
+        if(context.sessionAttribute("userId") == null){
+            // This means the user is NOT logged in
+            context.status(401); // UNAUTHORIZED -> Unauthenticated -> We don't know who you are
+            context.json(new ErrorMessage("You must be logged in to view this method!"));
+            return;
+        }
+        ArrayList<CartItem> cart = cartItemService.getCart((int) context.sessionAttribute("userId"));
+        if (cart == null){
+            context.status(404);
+            context.json(new ErrorMessage("Cart not found"));
+            return;
+        }else{
+            context.status(200);
+            context.json(cart);
             return;
         }
     }

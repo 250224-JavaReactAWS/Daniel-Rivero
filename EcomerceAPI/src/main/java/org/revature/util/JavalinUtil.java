@@ -2,12 +2,15 @@ package org.revature.util;
 
 import io.javalin.Javalin;
 import org.revature.controllers.CartItemController;
+import org.revature.controllers.OrderController;
 import org.revature.controllers.ProductController;
 import org.revature.controllers.UserController;
 import org.revature.repos.CartItemDAO;
+import org.revature.repos.OrderDAO;
 import org.revature.repos.ProductDAO;
 import org.revature.repos.UserDAO;
 import org.revature.services.CartItemService;
+import org.revature.services.OrderService;
 import org.revature.services.ProductService;
 import org.revature.services.UserService;
 
@@ -33,9 +36,9 @@ public class JavalinUtil {
         CartItemService cartItemService = new CartItemService(cartItemDAO);
         CartItemController cartItemController = new CartItemController(cartItemService);
 
-        //OrderDAO orderDAO = new OrderDAO();
-        //OrderService orderService = new OrderService(orderDAO);
-        //OrderController orderController = new OrderController(orderService);
+        OrderDAO orderDAO = new OrderDAO();
+        OrderService orderService = new OrderService(orderDAO);
+        OrderController orderController = new OrderController(orderService);
 
 
 
@@ -44,35 +47,36 @@ public class JavalinUtil {
                     // This can also be used to set up a set of paths
                     config.router.apiBuilder(() -> {
                         path("/users", () -> {
-                            post("/register", userController:: registerUserHandler);
-                            post("/login", userController:: loginHandler);
-                            put("/update", userController:: updateUserHandler);
-                            get("/", userController::getAllUsersHandler);
+                            post("/register", userController:: registerUserHandler);        //ok
+                            post("/login", userController:: loginHandler);                  //ok
+                            put("/update", userController:: updateUserHandler);             //ok
+                            get("/", userController::getAllUsersHandler);                   //
 
 
                         });
                         path("/products", () -> {
                             get("/", productController::getProductsHandler);
-                            get("/details", productController::getDetailsProductHandler);
-                            get("/getAll", productController::getAllProductsHandler);
-                            post("/addItem", productController::addProductHandler);
-                            put("/updateItem", productController::updateProductHandler);
+                            get("/details", productController::getDetailsProductHandler);   //ok
+                            get("/getAll", productController::getAllProductsHandler);       //ok
+                            post("/addItem", productController::addProductHandler);         //ok
+                            put("/updateItem", productController::updateProductHandler);    //ok
                         });
                         path("/cart", () -> {
-                            post("/addItem", cartItemController::postCartItemHandler);
+                            post("/addItem", cartItemController::postCartItemHandler);      //ok
                             post("/removeItem", cartItemController::removeCartItemHandler);
-                            post("/updateItem", cartItemController::updateCartItemHandler);
+                            put("/", cartItemController::updateCartItemHandler);            //ok
+                            get("/", cartItemController::getCartItemsHandler);
                         });
-                        //path("/order", () -> {
-                        //    get("/", orderController::getProductsHandler);
-                        //});
+                        path("/order", () -> {
+                            post("/", orderController::createOrderHandler);                 //ok
+                            get("/getAll", orderController::getAllOrdersHandler);           //ok
+                            put("/", orderController::updateOrderHandler);                  //ok
+                            get("/", orderController::getOrderByUserHandler);               //ok
+
+                        });
                     });
                 })
-//                .post("/users/register", ctx -> {userController.registerUserHandler(ctx);})
-                // Method Reference Syntax
-//                .post("/users/register", userController::registerUserHandler)
-//                .post("/users/login", userController::loginHandler)
-//                .get("/users", userController::getAllUsersHandler)
+
                 .start(port);
     }
 }

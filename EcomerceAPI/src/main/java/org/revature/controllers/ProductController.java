@@ -16,9 +16,18 @@ public class ProductController {
     public ProductController(ProductService productService) {
         this.productService= productService;
     }
-    public ArrayList<Product> getProductsHandler(Context context) {
+    public void getProductsHandler(Context context) {
         // Get all products
-        return productService.getProducts();
+        try {
+            ArrayList<Product> products = productService.getProducts();
+            context.json(products);
+            logger.info("Products found successfully");
+        } catch (Exception e) {
+            context.status(500);
+            context.json(new ErrorMessage("Something went wrong!"));
+            logger.error("Products not found");
+        }
+        return ;
     }
 
     public void getDetailsProductHandler(Context context) {
